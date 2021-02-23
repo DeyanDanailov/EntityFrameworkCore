@@ -11,7 +11,7 @@ namespace SoftUni
         {
             using (var db = new SoftUniContext())
             {
-                GetEmployeesFullInformation(db);               
+                GetEmployeesFromResearchAndDevelopment(db);               
             }
         }
         public static string GetEmployeesFullInformation(SoftUniContext context)
@@ -44,6 +44,29 @@ namespace SoftUni
                 sb.AppendLine(item.FirstName + $" - {item.Salary:f2}");
             }
 
+            return sb.ToString().Trim();
+        }
+        public static string GetEmployeesFromResearchAndDevelopment(SoftUniContext context)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            var employees = context.Employees
+                .Where(e => e.Department.Name == "Research and Development")
+                .Select(e => new
+                {
+                    e.FirstName,
+                    e.LastName,
+                    Department = e.Department.Name,
+                    e.Salary
+                })
+                .OrderBy(e => e.Salary)
+                .ThenByDescending(e => e.FirstName)
+                .ToList();
+
+            foreach (var item in employees)
+            {
+                sb.AppendLine($"{item.FirstName} {item.LastName} from {item.Department} - ${item.Salary:f2}");
+            }
             return sb.ToString().Trim();
         }
     }
