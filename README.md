@@ -1,0 +1,2 @@
+# EntityFrameworkCore
+learning ef core
