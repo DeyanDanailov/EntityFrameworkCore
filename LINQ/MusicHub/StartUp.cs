@@ -4,6 +4,7 @@ using System.Text;
 using MusicHub.Data;
 using System.Globalization;
 using Microsoft.EntityFrameworkCore;
+using MusicHub.Initializer;
 
 namespace MusicHub
 {
@@ -12,8 +13,7 @@ namespace MusicHub
         public static void Main(string[] args)
         {
             var context = new MusicHubDbContext();
-
-            ResetDatabase(context, shouldDropDatabase: true);
+            DbInitializer.ResetDatabase(context);
 
              //Console.WriteLine(ExportAlbumsInfo(context, 9));
 
@@ -108,31 +108,31 @@ namespace MusicHub
             return sb.ToString().Trim();
         }
 
-        private static void ResetDatabase(MusicHubDbContext context, bool shouldDropDatabase = false)
-        {
-            if (shouldDropDatabase)
-            {
-                context.Database.EnsureDeleted();
-            }
+        //private static void ResetDatabase(MusicHubDbContext context, bool shouldDropDatabase = false)
+        //{
+        //    if (shouldDropDatabase)
+        //    {
+        //        context.Database.EnsureDeleted();
+        //    }
 
-            if (context.Database.EnsureCreated())
-            {
-                return;
-            }
+        //    if (context.Database.EnsureCreated())
+        //    {
+        //        return;
+        //    }
 
-            var disableIntegrityChecksQuery = "EXEC sp_MSforeachtable @command1='ALTER TABLE ? NOCHECK CONSTRAINT ALL'";
-            context.Database.ExecuteSqlCommand(disableIntegrityChecksQuery);
+        //    var disableIntegrityChecksQuery = "EXEC sp_MSforeachtable @command1='ALTER TABLE ? NOCHECK CONSTRAINT ALL'";
+        //    context.Database.ExecuteSqlCommand(disableIntegrityChecksQuery);
 
-            var deleteRowsQuery = "EXEC sp_MSforeachtable @command1='SET QUOTED_IDENTIFIER ON;DELETE FROM ?'";
-            context.Database.ExecuteSqlCommand(deleteRowsQuery);
+        //    var deleteRowsQuery = "EXEC sp_MSforeachtable @command1='SET QUOTED_IDENTIFIER ON;DELETE FROM ?'";
+        //    context.Database.ExecuteSqlCommand(deleteRowsQuery);
 
-            var enableIntegrityChecksQuery =
-                "EXEC sp_MSforeachtable @command1='ALTER TABLE ? WITH CHECK CHECK CONSTRAINT ALL'";
-            context.Database.ExecuteSqlCommand(enableIntegrityChecksQuery);
+        //    var enableIntegrityChecksQuery =
+        //        "EXEC sp_MSforeachtable @command1='ALTER TABLE ? WITH CHECK CHECK CONSTRAINT ALL'";
+        //    context.Database.ExecuteSqlCommand(enableIntegrityChecksQuery);
 
-            var reseedQuery =
-                "EXEC sp_MSforeachtable @command1='IF OBJECT_ID(''?'') IN (SELECT OBJECT_ID FROM SYS.IDENTITY_COLUMNS) DBCC CHECKIDENT(''?'', RESEED, 0)'";
-            context.Database.ExecuteSqlCommand(reseedQuery);
-        }
+        //    var reseedQuery =
+        //        "EXEC sp_MSforeachtable @command1='IF OBJECT_ID(''?'') IN (SELECT OBJECT_ID FROM SYS.IDENTITY_COLUMNS) DBCC CHECKIDENT(''?'', RESEED, 0)'";
+        //    context.Database.ExecuteSqlCommand(reseedQuery);
+        //}
     }
 }
