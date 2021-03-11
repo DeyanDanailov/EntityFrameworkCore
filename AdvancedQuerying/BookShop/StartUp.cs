@@ -49,8 +49,8 @@
             //Console.WriteLine(GetBookTitlesContaining(db, input));
 
             //Problem 10
-            string input = Console.ReadLine().ToLower();
-            Console.WriteLine(GetBooksByAuthor(db, input));
+            //string input = Console.ReadLine().ToLower();
+            //Console.WriteLine(GetBooksByAuthor(db,input));
 
             //Problem 11
             //int n = int.Parse(Console.ReadLine());
@@ -63,7 +63,7 @@
             //Console.WriteLine(GetTotalProfitByCategory(db));
 
             //Problem 14
-            //Console.WriteLine(GetMostRecentBooks(db));
+            Console.WriteLine(GetMostRecentBooks(db));
 
             //Problem 15
             //IncreasePrices(db);
@@ -71,6 +71,123 @@
             //Problem 16
             //Console.WriteLine(RemoveBooks(db));
 
+        }
+
+        //Problem 16
+        public static int RemoveBooks(BookShopContext context)
+        {
+            //var categoryBooks = context.BooksCategories
+            //    .Where(bc => bc.Book.Copies < 4200);
+            //context.BooksCategories.RemoveRange(categoryBooks);
+            //context.SaveChanges();
+            var books = context.Books
+                .Where(b => b.Copies < 4200)
+                .ToList();
+            int count = books.Count();
+            context.Books.RemoveRange(books);
+            context.SaveChanges();
+
+            return books.Count();
+        }
+
+        //Problem 15
+        public static void IncreasePrices(BookShopContext context)
+        {
+            var booksToUpdate = context.Books
+                .Where(b => b.ReleaseDate.Value.Year < 2010);
+
+            foreach (var book in booksToUpdate)
+            {
+                book.Price += 5;
+            }
+
+            context.SaveChanges();
+
+        }
+
+
+        //Problem 14
+        public static string GetMostRecentBooks(BookShopContext context) 
+        {
+            var categories = context
+                                .Categories
+                                .Select(c => new
+                                {
+                                    Name = c.Name,
+                                    RecentBooks = c.CategoryBooks
+                                    .OrderByDescending(cb => cb.Book.ReleaseDate)
+                                    .Take(3)
+                                    .Select(b => new
+                                    {
+                                        Title = b.Book.Title,
+                                        Year = b.Book.ReleaseDate.Value.Year
+                                    })
+                                })
+                                .OrderBy(c => c.Name)
+                                .ToList();
+
+            var sb = new StringBuilder();
+
+            foreach (var category in categories)
+            {
+                sb.AppendLine($"--{category.Name}");
+                foreach (var book in category.RecentBooks)
+                {
+                    sb.AppendLine($"{book.Title} ({book.Year})");
+                }
+            }
+
+            return sb.ToString().Trim();
+        }
+
+        //Problem 13
+        public static string GetTotalProfitByCategory(BookShopContext context)
+        {
+            var categories = context.Categories
+                .Select(c => new
+                {
+                    c.Name,
+                    TotalProfit = c.CategoryBooks
+                    .Select(cb => new
+                    {
+                        BookProfit = cb.Book.Copies * cb.Book.Price
+                    })
+                    .Sum(c => c.BookProfit)
+                })
+                .OrderByDescending(c => c.TotalProfit)
+                .ThenBy(c => c.Name)
+                .ToList();
+
+            StringBuilder sb = new StringBuilder();
+            foreach (var item in categories)
+            {
+                sb.AppendLine($"{item.Name} ${item.TotalProfit:f2}");
+            }
+
+            return sb.ToString().Trim();
+
+        }
+
+        //Problem 12
+        public static string CountCopiesByAuthor(BookShopContext context)
+        {
+            var authors = context
+                            .Authors 
+                            .OrderByDescending(a => a.Books.Sum(b => b.Copies))
+                            .Select(a => $"{a.FirstName} {a.LastName} - {a.Books.Sum(b=>b.Copies)}")
+                            .ToList();
+
+            var result = String.Join(Environment.NewLine, authors);
+
+            return result;
+        }
+
+        //Problem 11
+        public static int CountBooks(BookShopContext context, int lengthCheck)
+        {
+            return context.Books
+                .Where(b => b.Title.Length > lengthCheck)
+                .Count();
         }
 
         //Problem 10
